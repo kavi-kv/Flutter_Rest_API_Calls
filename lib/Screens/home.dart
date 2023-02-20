@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:random_user_api_calls/Model/User_Info.dart';
+import 'package:random_user_api_calls/Service/user_api.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,7 +9,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-   List<dynamic> users = [];
+  List<User> users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUsers();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,37 +24,25 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Ramdom user'),
       ),
       body: ListView.builder(
-        itemCount: users.length,
-        itemBuilder: (context,index) {
-          final user = users[index];
-          final email = user['email'];
-          final name = user['name']['last'];
-          final imgUrl = user['picture']['thumbnail'];
-          return ListTile(
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: Image.network(imgUrl)),
-            title: Text(name),
-            subtitle: Text(email),
-          );
-      } ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: fetchUsers,
-        child: const Icon(Icons.add),
-      ),
+          itemCount: users.length,
+          itemBuilder: (BuildContext context, int index) {
+            final user = users[index];
+            final name = user.name;
+            final email = user.email;
+            return ListTile(
+              title: Text(name.first),
+              subtitle: Text(email),
+              
+            );
+          }),
+      
     );
   }
-  
-  void fetchUsers() async {
-    print("FetchUsers started");
-    const url = 'https://randomuser.me/api/?results=100';
-    final uri = Uri.parse(url);
-    final response = await http.get(uri);
-    final body = response.body;
-    final json = jsonDecode(body);
+
+  Future <void> fetchUsers() async {
+    final response = await UserApi.fetchUsers();
     setState(() {
-      users = json['results'];
+      users = response;
     });
-    print('Fetch users completed');
   }
 }
